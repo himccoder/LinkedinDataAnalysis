@@ -1,0 +1,299 @@
+\documentclass[11pt]{article}
+
+% Using the final ACL style (generates a 2-column, camera-ready format)
+\usepackage{acl}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+
+% For proper rendering and hyphenation of words containing Latin characters
+\usepackage[T1]{fontenc}
+% This assumes your files are encoded as UTF8
+\usepackage[utf8]{inputenc}
+
+% Improves the layout of the manuscript
+\usepackage{microtype}
+
+%Images
+\usepackage{graphicx}
+
+% Improves aesthetics of text in the typewriter font
+\usepackage{inconsolata}
+
+\title{CS 390B Project Report: LinkedIn Salary Prediction}
+
+% Author formatting adjusted for ACL style
+\author{Khang Pham \and Himnish Chhabra \\
+  % You can add your university or emails here if needed:
+  % University Name \\
+  % \texttt{\{email1, email2\}@domain.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+\section*{1. Group Members}
+
+Our group consists of two members: Khang Pham and Himnish Chhabra.
+
+Khang will focus on exploratory data analysis, data cleaning, statistical testing, and visual interpretation of results. This includes examining salary distributions, analyzing differences across industries and company sizes, and conducting hypothesis testing such as ANOVA and ANCOVA. Khang will also be responsible for presenting findings through clear visualizations and evaluating overall model performance.
+
+Himnish will be responsible for implementing the predictive modeling pipeline. This includes preparing structured and textual features, building baseline and advanced machine learning models, and tuning model parameters. He will experiment with models such as linear regression, Support Vector Machines (SVMs), and neural networks.
+
+Both members will collaborate on refining features, interpreting results, and writing the final report to ensure the project is cohesive and well-structured.
+
+\section*{2. Motivation}
+
+The goal of this project is to investigate how job descriptions and required skills relate to salary levels in LinkedIn job postings. Specifically, we want to determine whether the textual content of a job posting can be used to predict its listed compensation.
+
+Many job postings either provide wide salary ranges or omit salary information entirely. As research on pay transparency suggests \cite{arnold2025}, salary information remains inconsistent in online job markets. At the same time, companies compete for talent in an increasingly skill-driven economy. This raises an important question:
+
+\begin{center}
+\textit{Can we measure the market value of professional skills directly from job posting data?}
+\end{center}
+
+By analyzing job descriptions, industries, and company characteristics, we aim to identify which factors are most strongly associated with higher salaries. Our objective is to better understand how job requirements translate into compensation in today's labor market.
+
+\section*{3. Literature Review}
+
+We will examine prior research on wage determination and salary prediction using online job postings. Previous studies have shown that specific keywords, required skills, and industry trends influence salary outcomes.
+
+In particular, Chen and Autor \cite{chen2024} demonstrate that machine learning models can predict salary levels using textual features from job postings. Their work highlights the importance of language in understanding labor market value.
+
+We will build on this literature by combining statistical hypothesis testing with predictive modeling to evaluate both group-level salary differences and individual salary predictions.
+
+\section*{4. Data}
+
+We will use the LinkedIn Job Postings dataset (2023--2024) available on Kaggle. The dataset contains over 120,000 job listings and includes both structured and unstructured data. Structured variables include job title, company size, industry, location, minimum salary, maximum salary, and pay period. The dataset also includes unstructured text such as job descriptions and listed skills.
+
+Before analysis, we will clean the dataset by removing extreme or unrealistic salary outliers and handling missing salary values. Because the dataset is relatively large, we may apply sampling techniques during model training to improve computational efficiency while maintaining representative results.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\columnwidth]{output1.png}
+    \caption{Median Salary Distribution Histogram}
+    \label{fig:placeholder}
+\end{figure}
+
+For exploratory data analysis, we will examine salary distributions overall and across categories such as industry, company size, and location. We will use visualizations including histograms and boxplots to identify patterns and variability in salary data.
+
+To statistically test salary differences across groups, we will conduct hypothesis testing using:
+
+\begin{itemize}
+    \item \textbf{ANOVA (Analysis of Variance)} -- a statistical test used to determine whether the average salary differs significantly across multiple groups, such as industries.
+    \item \textbf{ANCOVA (Analysis of Covariance)} -- similar to ANOVA, but it controls for additional variables (such as company size or location) to determine whether salary differences remain significant after accounting for those factors.
+\end{itemize}
+
+These tests will help us determine whether observed salary differences are statistically meaningful rather than due to random variation.
+
+\section*{5. Approach}
+
+Our approach combines statistical analysis with machine learning techniques.
+
+First, we will preprocess the textual data by cleaning job descriptions and converting them into numerical features using methods such as TF-IDF or word embeddings. This allows the models to interpret text information mathematically.
+
+Next, we will build baseline models using linear regression. Linear regression provides a simple and interpretable starting point for predicting salary based on structured variables (industry, company size, location) and text-based features.
+
+After establishing a baseline, we will experiment with more advanced models such as Support Vector Machines (SVMs) and neural networks. These models can capture more complex and nonlinear relationships between job descriptions and compensation.
+
+By comparing simple and advanced models, we aim to determine whether salary prediction improves significantly when using more flexible modeling techniques.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{output2.png}
+    \caption{6 Highest Paying Skills}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\columnwidth]{output3.png}
+    \caption{6 Lowest Paying Skills}
+    \label{fig:placeholder}
+\end{figure}
+
+\section*{6. Evaluation Metrics}
+
+We will evaluate our results both qualitatively and quantitatively.
+
+Qualitatively, we will produce visualizations such as salary distribution plots, industry comparisons, and the predicted-versus-actual salary scatterplot. These will help us interpret patterns and understand model behavior.
+
+Quantitatively, because salary prediction is a regression problem, we will use:
+
+\begin{itemize}
+    \item \textbf{Mean Squared Error (MSE)} -- measures the average squared difference between predicted and actual salaries. Lower values indicate better performance.
+    \item \textbf{Root Mean Squared Error (RMSE)} -- similar to MSE but expressed in salary units (dollars), making it easier to interpret the prediction error.
+    \item \textbf{R-squared ($R^2$)} -- measures the proportion of salary variation explained by the model. Higher values indicate a stronger explanatory power. 
+\end{itemize}
+
+We will also use cross-validation to ensure that our results generalize beyond the training data.
+
+For ANOVA and ANCOVA, we will report p-values and F-statistics to determine whether salary differences between groups are statistically significant.
+
+If advanced models substantially reduce prediction error compared to linear regression, this would suggest that salary depends on complex patterns within job descriptions.
+
+\section*{7. Pre-Processing}
+First, we standardize the target variable, \texttt{med\_salary}, by converting all hourly and monthly rates into a consistent yearly figure using conversion factors of $\times 2{,}080$ for hourly rates (40 h/week $\times$ 52 weeks) and $\times 12$ for monthly rates. Where the median salary is missing, we impute it from the mean of the available minimum and maximum bounds. Records with no salary signal whatsoever are dropped.
+
+We then perform a high-integrity merge between \texttt{salaries.csv}, \texttt{postings.csv}, and \texttt{job\_industries.csv} (joined with \texttt{industries.csv}) using \texttt{job\_id} as the primary key. Extreme salary values below \$15{,}000 or above \$600{,}000 per year are removed as implausible outliers, leaving \textbf{35,379 job postings} for modeling. The final merged dataset covers all seven work types, multiple experience levels, and hundreds of industry categories.
+
+For the unstructured text, we normalize job descriptions by stripping HTML tags with a regular expression and removing all non-alphabetic characters. The cleaned text is then lower-cased and reduced to single-space separation, producing a corpus ready for vectorization. Categorical variables (\texttt{work\_type}, \texttt{formatted\_experience\_level}, \texttt{industry\_name}) are label-encoded via one-hot encoding.
+
+\section*{8. Exploratory Data Analysis}
+Our exploratory analysis focuses on identifying the primary structural and skill-based drivers of compensation. This phase involved analyzing salary distributions across work types, skill volumes, and specific technical domains to uncover the underlying patterns in the LinkedIn dataset.
+
+\subsection*{Overall Salary Distribution}
+As shown in Figure~\ref{fig:placeholder}, the distribution of annual median salaries is strongly right-skewed with a mode near \$50{,}000--\$60{,}000, consistent with the large proportion of full-time, entry-to-mid-level U.S. positions. A long tail extends toward \$400{,}000, corresponding to executive and specialized technical roles. The presence of this skew motivated our use of a salary cap at \$400{,}000 in exploratory plots and a broader \$600{,}000 ceiling for modeling (to include senior executive postings while discarding clearly erroneous data entry). The salary distribution also highlights that approximately 8\% of postings fall below \$20{,}000, a cluster that largely represents part-time and internship roles already distinguished by \texttt{work\_type}.
+
+\subsection*{a. Work Type Spread}
+Shown in Figure~\ref{fig:work_type}, there is significant variance in salary across different employment categories. Full-time and Contract roles exhibit the highest median salaries and the widest ranges, with several postings reaching the \$400,000 cap. In contrast, Internship, Part-time, and Volunteer roles cluster at the lower end of the spectrum, usually below \$75,000, suggesting that \texttt{work\_type} is a critical categorical feature for our regression models.
+
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=\columnwidth]{output4.png}
+    \caption{Compensation Spread by Work Type}
+    \label{fig:work_type}
+\end{figure}
+
+\subsection*{b. Skill Requirement Volume}
+Since our dataset contains jobs that listed multiple skills, we plotted the median salary for jobs listing multiple unique skills. Interestingly, we see that requiring 2 unique skills averages a lower median salary than having 1 and 3. This "threshold effect" suggests that jobs requiring a specific trifecta of skills are valued significantly higher by employers, justifying our plan to use non-linear models like Neural Networks to capture these complex interactions.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{output5.png}
+    \caption{Impact of Skill Requirement Volume on Salary}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection*{c. Salary Distribution for Demanded Skills}
+We gathered the 5 most frequent industry categories from the dataset and graphed a box plot. We see that Engineering and Information Technology contains the highest median salary listing at above \$100,000. In contrast, Management and Sales roles show lower median pay and narrower interquartile ranges. Manufacturing roles exhibit the lowest median pay among the top five.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{output6.png}
+    \caption{Salary Distribution for Most In-Demand Skills}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection*{d. Key Observations from EDA}
+Several structural patterns emerged that directly informed our modeling decisions. First, \texttt{work\_type} is the single strongest categorical predictor: full-time and contract roles command median salaries roughly 2$\times$ higher than internships and part-time roles. Second, the non-monotonic relationship between skill count and salary (Figure~\ref{fig:placeholder}) suggests interaction effects that linear models may struggle to capture, motivating the use of non-linear models in future work. Third, the high-paying skills bar chart (output2) shows that niche technical qualifications such as quantum computing and chip architecture carry strong premiums, while low-paying postings (output3) tend to emphasize generic soft skills. This asymmetry validates the use of TF-IDF text features: salary signal is concentrated in specific vocabulary rather than general language patterns.
+
+\section*{9. Statistical Analysis}
+To validate our hypotheses, we conducted two primary statistical tests:
+
+\subsection*{a. One-Way ANOVA}
+We tested if heart rate changes significantly based on required skills. We performed a One-Way ANOVA test on skills for job listings.
+
+\textbf{Results:}The test resulted in an F-statistic of 4.3275 and a p-value of 0.001685. The extremely small p-value indicates that the differences in salary across these skill categories are statistically significant, justifying their use as key features in our predictive models.
+
+\subsection*{b. Two-Sample T-Test}
+We conducted a t-test to compare the average salaries of roles requiring specific high-value skills (e.g., Information Technology) against the general population.
+
+\textbf{Results:}The test yielded a p-value of 0.0144. Since the p-value is below the $0.05$ threshold, we reject the null hypothesis and conclude that the targeted skill significantly influences salary levels.
+
+
+
+\section*{10. Model Training and Evaluation}
+
+\subsection*{a. Feature Representation}
+
+We construct two distinct feature sets to isolate the marginal value of textual information:
+
+\begin{itemize}
+    \item \textbf{Structured features only (Model A):} Three one-hot-encoded categorical variables -- \texttt{work\_type} (7 categories), \texttt{formatted\_experience\_level} (6 levels), and \texttt{industry\_name} (hundreds of categories).
+    \item \textbf{Structured + TF-IDF (Model B):} All structured features from Model A, plus TF-IDF vectors extracted from cleaned job descriptions. We retain the top 5{,}000 unigram and bigram tokens (by corpus frequency) and apply sublinear TF scaling (\texttt{sublinear\_tf=True}) to reduce the dominance of high-frequency words. Tokens appearing in fewer than 5 documents are discarded to reduce noise.
+\end{itemize}
+
+\subsection*{b. Model Architecture}
+
+Both models use Ridge Regression (L2-regularized linear regression). Ridge is preferable to ordinary least squares in the high-dimensional TF-IDF setting because it prevents over-fitting to rare vocabulary. The regularization strength was set to $\alpha = 1.0$ for Model A and $\alpha = 10.0$ for Model B; the larger value for Model B reflects the higher dimensionality introduced by 5{,}000 TF-IDF features. The full dataset was partitioned 80/20 into training (28{,}303 samples) and test (7{,}076 samples) sets using a fixed random seed for reproducibility.
+
+\subsection*{c. Results}
+
+Table~\ref{tab:model_results} summarizes the hold-out test performance of both models.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcc}
+\hline
+\textbf{Model} & \textbf{RMSE (\$)} & \textbf{$R^2$} \\
+\hline
+Model A: Structured only         & 47{,}754 & 0.320 \\
+Model B: Structured + TF-IDF     & 36{,}843 & 0.595 \\
+\hline
+\multicolumn{3}{l}{\textit{5-Fold CV (Model B): $R^2 = 0.594 \pm 0.015$,\ RMSE $= \$36{,}998 \pm \$1{,}432$}} \\
+\hline
+\end{tabular}
+\caption{Test-set performance of Ridge Regression models.}
+\label{tab:model_results}
+\end{table}
+
+Adding TF-IDF text features reduced RMSE by \textbf{\$10{,}911} (23\% improvement) and raised $R^2$ from 0.320 to 0.595, confirming that the textual content of job descriptions carries substantial salary signal beyond what structured metadata alone can provide. The five-fold cross-validation results closely match the held-out test scores ($R^2 = 0.594 \pm 0.015$), indicating that the model generalizes well and is not over-fit to the training set.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{output10.png}
+    \caption{Model comparison: RMSE and $R^2$ for Model A vs.\ Model B.}
+    \label{fig:model_comparison}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{output7.png}
+    \caption{Predicted vs.\ actual salary on the test set (Model B). The dashed red line represents perfect prediction.}
+    \label{fig:pred_vs_actual}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{output8.png}
+    \caption{Residual distribution and residuals vs.\ fitted values for Model B.}
+    \label{fig:residuals}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{output9.png}
+    \caption{Top 20 TF-IDF tokens with the largest positive (left) and negative (right) Ridge coefficients.}
+    \label{fig:tfidf_coefs}
+\end{figure}
+
+\subsection*{d. Interpretation of TF-IDF Coefficients}
+
+Figure~\ref{fig:tfidf_coefs} reveals interpretable salary signals embedded in the job description vocabulary. Tokens with large positive coefficients include domain-specific bigrams associated with high-compensation technical roles, such as terms related to machine learning infrastructure, financial engineering, and cloud architecture. Tokens with large negative coefficients tend to appear in postings for service-sector and retail positions (e.g., references to shift work, customer service, and hourly scheduling). This asymmetry corroborates the findings from our EDA (Section 8d) and provides a word-level explanation for the salary premiums observed in specific industries.
+
+\subsection*{e. Residual Analysis}
+
+The residual histogram (Figure~\ref{fig:residuals}, left) shows an approximately bell-shaped distribution centered near zero, with a slight positive skew. This skew indicates that the model systematically under-predicts the highest-salary roles -- a known limitation of linear models on right-skewed targets. The residuals-vs.-fitted plot (Figure~\ref{fig:residuals}, right) shows a ``fan'' shape: variance in prediction error grows with predicted salary. This heteroscedasticity is expected given the wide salary range (\$15k -- \$600k) and suggests that a log-transformed target or a non-linear model may reduce prediction variance for senior roles.
+
+\subsection*{f. Challenges and Observations}
+
+Several challenges arose during this phase:
+
+\begin{itemize}
+    \item \textbf{Sparse salary labels.} Only 35,379 of the 120,000+ postings had usable salary data after preprocessing, a 71\% reduction. This is consistent with known reporting inconsistencies in online job boards \cite{arnold2025} and limits the generalizability of any salary model trained on this corpus.
+    \item \textbf{High-dimensional TF-IDF space.} With 5{,}000 features and only \textasciitilde28k training samples, regularization is essential. We observed that plain OLS diverged under TF-IDF features, while Ridge converged stably with $\alpha = 10$.
+    \item \textbf{Heteroscedastic residuals.} As noted above, salary prediction error grows with salary level. Future models (SVMs, neural networks) or a log-salary target will be evaluated to address this.
+    \item \textbf{Missing experience level.} Approximately 30\% of postings lacked a \texttt{formatted\_experience\_level} label; these were imputed as ``Unknown,'' which may slightly suppress the explanatory power of experience level as a feature.
+    \item \textbf{Industry granularity.} The dataset contains hundreds of fine-grained industry categories. Rare industries have few training examples and may over-fit under one-hot encoding; grouping minor industries into an ``Other'' bucket may improve robustness in future iterations.
+\end{itemize}
+
+% Using the manual bibliography format from the original document
+\begin{thebibliography}{9}
+
+\bibitem{chen2024}
+Shanshan Chen and David Autor.
+\textit{Words Matter: AI Can Predict Salaries Based on the Text of Online Job Postings}.
+Stanford Digital Economy Lab Research Brief, 2024.
+
+\bibitem{arnold2025}
+David Arnold, Simon Quach, and Bledi Taska.
+\textit{The Impact of Pay Transparency in Job Postings on the Labor Market}.
+NBER Working Paper Series, w34480:1--48, 2025.
+
+\end{thebibliography}
+
+\end{document}

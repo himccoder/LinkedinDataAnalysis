@@ -199,24 +199,24 @@ We conducted a t-test to compare the average salaries of roles requiring specifi
 
 \subsection*{a. Feature Representation}
 
-We construct two distinct feature sets to isolate the marginal value of textual information:
+We built two versions of the model to see whether job description text improves salary prediction:
 
 \begin{itemize}
-    \item \textbf{Structured features only (Model A):} Three one-hot-encoded categorical variables -- \texttt{work\_type} (7 categories), \texttt{formatted\_experience\_level} (6 levels), and \texttt{industry\_name} (hundreds of categories).
-    \item \textbf{Structured + TF-IDF (Model B):} All structured features from Model A, plus TF-IDF vectors extracted from cleaned job descriptions. We retain the top 5{,}000 unigram and bigram tokens (by corpus frequency) and apply sublinear TF scaling (\texttt{sublinear\_tf=True}) to reduce the dominance of high-frequency words. Tokens appearing in fewer than 5 documents are discarded to reduce noise.
+    \item \textbf{Model A (structured only):} Uses categorical job information -- work type, experience level, and industry -- converted into numerical format.
+    \item \textbf{Model B (structured + text):} Everything in Model A, plus text features from job descriptions. We used TF-IDF, which turns words into numbers based on how often they appear and how unique they are. We kept the top 5{,}000 words/phrases to capture the most useful vocabulary.
 \end{itemize}
 
-\subsection*{b. Model Architecture}
+\subsection*{b. Model}
 
-Both models use Ridge Regression (L2-regularized linear regression). Ridge is preferable to ordinary least squares in the high-dimensional TF-IDF setting because it prevents over-fitting to rare vocabulary. The regularization strength was set to $\alpha = 1.0$ for Model A and $\alpha = 10.0$ for Model B; the larger value for Model B reflects the higher dimensionality introduced by 5{,}000 TF-IDF features. The full dataset was partitioned 80/20 into training (28{,}303 samples) and test (7{,}076 samples) sets using a fixed random seed for reproducibility.
+Both models use Ridge Regression, a form of linear regression that adds a penalty to prevent the model from over-relying on any single word or feature -- especially important when dealing with thousands of text features. We split the data 80/20: 28{,}303 jobs for training and 7{,}076 for testing.
 
 \subsection*{c. Results}
 
-Table~\ref{tab:model_results} summarizes the hold-out test performance of both models.
+Table~1 shows how well each model predicted salary on the test set.
 
 \begin{table}[h]
 \centering
-\small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcc}
 \hline
 \textbf{Model} & \textbf{RMSE (\$)} & \textbf{$R^2$} \\
@@ -224,14 +224,16 @@ Table~\ref{tab:model_results} summarizes the hold-out test performance of both m
 Model A: Structured only         & 47{,}754 & 0.320 \\
 Model B: Structured + TF-IDF     & 36{,}843 & 0.595 \\
 \hline
-\multicolumn{3}{l}{\textit{5-Fold CV (Model B): $R^2 = 0.594 \pm 0.015$,\ RMSE $= \$36{,}998 \pm \$1{,}432$}} \\
+\multicolumn{3}{l}{\textit{5-Fold CV (Model B): $R^2 = 0.594 \pm 0.015$,}} \\
+\multicolumn{3}{l}{\textit{\phantom{5-Fold CV (Model B): }RMSE $= \$36{,}998 \pm \$1{,}432$}} \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \caption{Test-set performance of Ridge Regression models.}
 \label{tab:model_results}
 \end{table}
 
-Adding TF-IDF text features reduced RMSE by \textbf{\$10{,}911} (23\% improvement) and raised $R^2$ from 0.320 to 0.595, confirming that the textual content of job descriptions carries substantial salary signal beyond what structured metadata alone can provide. The five-fold cross-validation results closely match the held-out test scores ($R^2 = 0.594 \pm 0.015$), indicating that the model generalizes well and is not over-fit to the training set.
+Adding text features cut prediction error by \textbf{\$10{,}911} (23\%) and raised $R^2$ from 0.320 to 0.595, meaning the model now explains roughly 60\% of salary variation. Cross-validation scores closely matched these results, showing the model generalizes well to unseen data.
 
 \begin{figure}[h]
     \centering
@@ -261,24 +263,22 @@ Adding TF-IDF text features reduced RMSE by \textbf{\$10{,}911} (23\% improvemen
     \label{fig:tfidf_coefs}
 \end{figure}
 
-\subsection*{d. Interpretation of TF-IDF Coefficients}
+\subsection*{d. What the Words Tell Us}
 
-Figure~\ref{fig:tfidf_coefs} reveals interpretable salary signals embedded in the job description vocabulary. Tokens with large positive coefficients include domain-specific bigrams associated with high-compensation technical roles, such as terms related to machine learning infrastructure, financial engineering, and cloud architecture. Tokens with large negative coefficients tend to appear in postings for service-sector and retail positions (e.g., references to shift work, customer service, and hourly scheduling). This asymmetry corroborates the findings from our EDA (Section 8d) and provides a word-level explanation for the salary premiums observed in specific industries.
+Figure~\ref{fig:tfidf_coefs} shows which words in job descriptions are most associated with higher or lower salaries. Words linked to high pay tend to be technical terms from fields like machine learning, finance, and cloud computing. Words linked to lower pay tend to come from service-sector jobs (e.g., shift scheduling, customer service). This aligns with our EDA findings and confirms that salary information is encoded in specific vocabulary, not just general language.
 
 \subsection*{e. Residual Analysis}
 
-The residual histogram (Figure~\ref{fig:residuals}, left) shows an approximately bell-shaped distribution centered near zero, with a slight positive skew. This skew indicates that the model systematically under-predicts the highest-salary roles -- a known limitation of linear models on right-skewed targets. The residuals-vs.-fitted plot (Figure~\ref{fig:residuals}, right) shows a ``fan'' shape: variance in prediction error grows with predicted salary. This heteroscedasticity is expected given the wide salary range (\$15k -- \$600k) and suggests that a log-transformed target or a non-linear model may reduce prediction variance for senior roles.
+The residual plot (Figure~\ref{fig:residuals}) shows how far off our predictions were. Errors are roughly centered at zero, but the model tends to under-predict the highest salaries -- a common issue with linear models when salaries are heavily skewed. Prediction error also grows at higher salary levels, suggesting that future work with non-linear models or a log-transformed salary target could improve accuracy for senior roles.
 
-\subsection*{f. Challenges and Observations}
-
-Several challenges arose during this phase:
+\subsection*{f. Challenges}
 
 \begin{itemize}
-    \item \textbf{Sparse salary labels.} Only 35,379 of the 120,000+ postings had usable salary data after preprocessing, a 71\% reduction. This is consistent with known reporting inconsistencies in online job boards \cite{arnold2025} and limits the generalizability of any salary model trained on this corpus.
-    \item \textbf{High-dimensional TF-IDF space.} With 5{,}000 features and only \textasciitilde28k training samples, regularization is essential. We observed that plain OLS diverged under TF-IDF features, while Ridge converged stably with $\alpha = 10$.
-    \item \textbf{Heteroscedastic residuals.} As noted above, salary prediction error grows with salary level. Future models (SVMs, neural networks) or a log-salary target will be evaluated to address this.
-    \item \textbf{Missing experience level.} Approximately 30\% of postings lacked a \texttt{formatted\_experience\_level} label; these were imputed as ``Unknown,'' which may slightly suppress the explanatory power of experience level as a feature.
-    \item \textbf{Industry granularity.} The dataset contains hundreds of fine-grained industry categories. Rare industries have few training examples and may over-fit under one-hot encoding; grouping minor industries into an ``Other'' bucket may improve robustness in future iterations.
+    \item \textbf{Limited salary data.} Only 35,379 of 120,000+ postings had usable salary info after cleaning -- a 71\% reduction -- limiting how broadly our model applies.
+    \item \textbf{Many features, limited data.} With 5{,}000 text features and \textasciitilde28k samples, regularization was essential to prevent overfitting.
+    \item \textbf{Growing prediction error.} The model struggles more with high-salary roles; future work will explore log-transformation or non-linear models.
+    \item \textbf{Missing experience levels.} About 30\% of postings had no experience level listed and were labeled ``Unknown,'' which may weaken that feature's usefulness.
+    \item \textbf{Too many industry categories.} Hundreds of fine-grained industries means rare ones have very few examples. Grouping small industries into an ``Other'' category may help in future iterations.
 \end{itemize}
 
 % Using the manual bibliography format from the original document

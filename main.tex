@@ -21,11 +21,7 @@
 % Improves aesthetics of text in the typewriter font
 \usepackage{inconsolata}
 
-<<<<<<< HEAD
-\title{Pay Predictor: Predicting Median Salary from Skills listed on Linkedin Job Postings}
-=======
 \title{Pay Predictor: Predicting Median Salary from Skills Listed on Linkedin Job Postings}
->>>>>>> e8abbc0119783097624469e811f594ea1215b954
 
 % Author formatting adjusted for ACL style
 \author{Khang Pham \and Himnish Chhabra \\
@@ -78,7 +74,7 @@ Before analysis, we will clean the dataset by removing extreme or unrealistic sa
     \centering
     \includegraphics[width=\columnwidth]{output1.png}
     \caption{Median Salary Distribution Histogram}
-    \label{fig:placeholder}
+    \label{fig:salary_dist}
 \end{figure}
 
 For exploratory data analysis, we will examine salary distributions overall and across categories such as industry, company size, and location. We will use visualizations including histograms and boxplots to identify patterns and variability in salary data.
@@ -108,14 +104,14 @@ By comparing simple and advanced models, we aim to determine whether salary pred
     \centering
     \includegraphics[width=\columnwidth]{output2.png}
     \caption{6 Highest Paying Skills}
-    \label{fig:placeholder}
+    \label{fig:high_paying_skills}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=\columnwidth]{output3.png}
     \caption{6 Lowest Paying Skills}
-    \label{fig:placeholder}
+    \label{fig:low_paying_skills}
 \end{figure}
 
 \section*{6. Evaluation Metrics}
@@ -149,7 +145,7 @@ For the unstructured text, we normalize job descriptions by stripping HTML tags 
 Our exploratory analysis focuses on identifying the primary structural and skill-based drivers of compensation. This phase involved analyzing salary distributions across work types, skill volumes, and specific technical domains to uncover the underlying patterns in the LinkedIn dataset.
 
 \subsection*{Overall Salary Distribution}
-As shown in Figure~\ref{fig:placeholder}, the distribution of annual median salaries is strongly right-skewed with a mode near \$50{,}000--\$60{,}000, consistent with the large proportion of full-time, entry-to-mid-level U.S. positions. A long tail extends toward \$400{,}000, corresponding to executive and specialized technical roles. The presence of this skew motivated our use of a salary cap at \$400{,}000 in exploratory plots and a broader \$600{,}000 ceiling for modeling (to include senior executive postings while discarding clearly erroneous data entry). The salary distribution also highlights that approximately 8\% of postings fall below \$20{,}000, a cluster that largely represents part-time and internship roles already distinguished by \texttt{work\_type}.
+As shown in Figure~\ref{fig:salary_dist}, the distribution of annual median salaries is strongly right-skewed with a mode near \$50{,}000--\$60{,}000, consistent with the large proportion of full-time, entry-to-mid-level U.S. positions. A long tail extends toward \$400{,}000, corresponding to executive and specialized technical roles. The presence of this skew motivated our use of a salary cap at \$400{,}000 in exploratory plots and a broader \$600{,}000 ceiling for modeling (to include senior executive postings while discarding clearly erroneous data entry). The salary distribution also highlights that approximately 8\% of postings fall below \$20{,}000, a cluster that largely represents part-time and internship roles already distinguished by \texttt{work\_type}.
 
 \subsection*{a. Work Type Spread}
 Shown in Figure~\ref{fig:work_type}, there is significant variance in salary across different employment categories. Full-time and Contract roles exhibit the highest median salaries and the widest ranges, with several postings reaching the \$400,000 cap. In contrast, Internship, Part-time, and Volunteer roles cluster at the lower end of the spectrum, usually below \$75,000, suggesting that \texttt{work\_type} is a critical categorical feature for our regression models.
@@ -168,7 +164,7 @@ Since our dataset contains jobs that listed multiple skills, we plotted the medi
     \centering
     \includegraphics[width=\columnwidth]{output5.png}
     \caption{Impact of Skill Requirement Volume on Salary}
-    \label{fig:placeholder}
+    \label{fig:skill_volume}
 \end{figure}
 
 \subsection*{c. Salary Distribution for Demanded Skills}
@@ -178,11 +174,11 @@ We gathered the 5 most frequent industry categories from the dataset and graphed
     \centering
     \includegraphics[width=\columnwidth]{output6.png}
     \caption{Salary Distribution for Most In-Demand Skills}
-    \label{fig:placeholder}
+    \label{fig:industry_dist}
 \end{figure}
 
 \subsection*{d. Key Observations from EDA}
-Several structural patterns emerged that directly informed our modeling decisions. First, \texttt{work\_type} is the single strongest categorical predictor: full-time and contract roles command median salaries roughly 2$\times$ higher than internships and part-time roles. Second, the non-monotonic relationship between skill count and salary (Figure~\ref{fig:placeholder}) suggests interaction effects that linear models may struggle to capture, motivating the use of non-linear models in future work. Third, the high-paying skills bar chart (output2) shows that niche technical qualifications such as quantum computing and chip architecture carry strong premiums, while low-paying postings (output3) tend to emphasize generic soft skills. This asymmetry validates the use of TF-IDF text features: salary signal is concentrated in specific vocabulary rather than general language patterns.
+Several structural patterns emerged that directly informed our modeling decisions. First, \texttt{work\_type} is the single strongest categorical predictor: full-time and contract roles command median salaries roughly 2$\times$ higher than internships and part-time roles. Second, the non-monotonic relationship between skill count and salary (Figure~\ref{fig:skill_volume}) suggests interaction effects that linear models may struggle to capture, motivating the use of non-linear models in future work. Third, the high-paying skills bar chart (output2) shows that niche technical qualifications such as quantum computing and chip architecture carry strong premiums, while low-paying postings (output3) tend to emphasize generic soft skills. This asymmetry validates the use of TF-IDF text features: salary signal is concentrated in specific vocabulary rather than general language patterns.
 
 \section*{9. Statistical Analysis}
 To validate our hypotheses, we conducted two primary statistical tests:
@@ -285,19 +281,6 @@ The residual plot (Figure~\ref{fig:residuals}) shows how far off our predictions
     \item \textbf{Too many industry categories.} Hundreds of fine-grained industries means rare ones have very few examples. Grouping small industries into an ``Other'' category may help in future iterations.
 \end{itemize}
 
-% Using the manual bibliography format from the original document
-\begin{thebibliography}{9}
-
-\bibitem{chen2024}
-Shanshan Chen and David Autor.
-\textit{Words Matter: AI Can Predict Salaries Based on the Text of Online Job Postings}.
-Stanford Digital Economy Lab Research Brief, 2024.
-
-\bibitem{arnold2025}
-David Arnold, Simon Quach, and Bledi Taska.
-\textit{The Impact of Pay Transparency in Job Postings on the Labor Market}.
-NBER Working Paper Series, w34480:1--48, 2025.
-
-\end{thebibliography}
+\bibliography{refs}
 
 \end{document}

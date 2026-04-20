@@ -281,6 +281,97 @@ The residual plot (Figure~\ref{fig:residuals}) shows how far off our predictions
     \item \textbf{Too many industry categories.} Hundreds of fine-grained industries means rare ones have very few examples. Grouping small industries into an ``Other'' category may help in future iterations.
 \end{itemize}
 
+\section*{11. Neural Network Model}
+
+\subsection*{a. Motivation}
+
+The residual analysis from our Ridge Regression models revealed a consistent pattern: prediction error grew at higher salary levels, and the model struggled to capture non-linear relationships in the data. Our EDA also showed a non-monotonic relationship between skill count and salary, which a linear model cannot easily represent. To address these limitations, we trained a Multilayer Perceptron (MLP) neural network as our advanced model. An MLP can learn complex, non-linear patterns by passing data through multiple layers of interconnected nodes, each applying a transformation before passing the result forward.
+
+\subsection*{b. Dataset and Features}
+
+To keep training time manageable on CPU, we worked with a random sample of 10{,}000 postings drawn from the full 35{,}379-posting dataset, using the same random seed as the Ridge experiments for reproducibility. The sample was split 80/20 into 8{,}000 training and 2{,}000 test examples. We used the same two feature configurations as in Section~10, yielding four models in total for comparison.
+
+\begin{itemize}
+    \item \textbf{Model C (MLP, structured only):} Work type, experience level, and industry, one-hot encoded and normalized with a standard scaler.
+    \item \textbf{Model D (MLP, structured and TF-IDF):} All structured features from Model C plus TF-IDF text vectors from job descriptions, scaled with a max-absolute scaler to preserve the sparse structure of the text features.
+\end{itemize}
+
+\subsection*{c. Architecture and Training}
+
+Both neural network models use a four-layer architecture with hidden layer sizes of 512, 256, 128, and 64 neurons respectively. Each layer uses a ReLU activation function, which simply sets any negative value to zero and passes positive values through unchanged. This allows the network to learn non-linear salary patterns without the vanishing-gradient problems that come with older activation functions.
+
+We trained using the Adam optimizer with an initial learning rate of 0.001 and L2 regularization (weight decay) of 0.01 to prevent overfitting. Batch size was set to 256 samples per update. To avoid over-training, we enabled early stopping: training halts automatically when the validation score does not improve by more than 0.0001 for 10 consecutive epochs. The validation set was 10\% of the training data held aside during training.
+
+\subsection*{d. Results}
+
+Table~2 shows the test-set performance for all four models across both algorithms.
+
+\begin{table}[h]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llcc}
+\hline
+\textbf{Model} & \textbf{Algorithm} & \textbf{RMSE (\$)} & \textbf{$R^2$} \\
+\hline
+Model A & Ridge, structured only        & 46{,}748 & 0.290 \\
+Model B & Ridge, structured + TF-IDF    & 37{,}190 & 0.551 \\
+Model C & MLP, structured only          & 46{,}657 & 0.293 \\
+Model D & MLP, structured + TF-IDF      & \textbf{36{,}947} & \textbf{0.557} \\
+\hline
+\end{tabular}%
+}
+\caption{Test-set performance across all four models (10{,}000 sample).}
+\label{tab:nn_results}
+\end{table}
+
+Model D achieved the best performance overall, with an RMSE of \$36{,}947 and an $R^2$ of 0.557. It reached this result in just 27 epochs before early stopping triggered. Adding TF-IDF text features again provided the largest single improvement across both algorithms, reducing RMSE by roughly \$10{,}000 compared to structured features alone. The full four-model comparison is visualized in Figure~\ref{fig:nn_comparison}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{nn_output4.png}
+    \caption{RMSE and $R^2$ comparison across all four models. Blue bars represent Ridge Regression and green bars represent the MLP. Hatching indicates that TF-IDF text features were included.}
+    \label{fig:nn_comparison}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{nn_output1.png}
+    \caption{Training loss and validation $R^2$ per epoch for Model D. The model converged in 27 epochs before early stopping halted training.}
+    \label{fig:nn_loss}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{nn_output2.png}
+    \caption{Predicted vs.\ actual salary on the test set for Model D. The dashed red line represents perfect prediction.}
+    \label{fig:nn_pred}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{nn_output3.png}
+    \caption{Residual distribution and residuals vs.\ fitted values for Model D.}
+    \label{fig:nn_resid}
+\end{figure}
+
+\subsection*{e. Training Curve}
+
+Figure~\ref{fig:nn_loss} shows how the model improved over training epochs. The training loss dropped sharply in the first few epochs, falling from over 6 billion to under 500 million in the first 12 iterations. The validation $R^2$ climbed quickly at first, reaching around 0.53 by epoch 12, after which improvement slowed and the model stopped at epoch 27. This pattern is healthy: rapid early learning followed by a gradual plateau, with no sign of catastrophic overfitting.
+
+\subsection*{f. Comparison with Ridge Regression}
+
+The MLP outperformed Ridge Regression on both RMSE and $R^2$ when text features were included, but the margin was narrow. Model D (MLP) achieved an $R^2$ of 0.557 compared to 0.551 for Model B (Ridge), a modest 0.6 percentage point improvement. On structured features alone, the two algorithms performed almost identically, with Model C edging out Model A by less than \$100 in RMSE.
+
+This result suggests two things. First, the salary signal in this dataset is largely captured by linear relationships between features and compensation. The MLP did not find dramatically different patterns from those Ridge already exploited. Second, the text vocabulary encoded through TF-IDF is the dominant source of predictive information regardless of which algorithm is used. The word choice in a job description matters far more than which model reads it.
+
+\subsection*{g. Residual Analysis}
+
+The residual plots for Model D (Figure~\ref{fig:nn_resid}) closely resemble those of Model B. Errors are roughly centered at zero with a slight positive skew, meaning the MLP also tends to under-predict the highest salaries. The fan-shaped spread in the residuals-vs.-fitted plot indicates that prediction error grows with salary level, a pattern consistent with the skewed salary distribution in the raw data. This heteroscedasticity suggests that future work using a log-transformed salary target or a more expressive architecture could further reduce error at the high end of the pay scale.
+
+\subsection*{h. Challenges}
+
+Training the MLP on this dataset surfaced a few practical difficulties. Converting the sparse TF-IDF matrix to a dense array for the neural network required roughly 500 MB of memory, which slowed down processing on a standard laptop CPU. Training each epoch on the full dataset took approximately two minutes, making cross-validation impractical without access to a GPU or a computing cluster. We addressed this by subsampling to 10{,}000 rows, which reduced training time to under ten minutes while preserving the core patterns in the data. The slight drop in absolute performance compared to Section~10 (where Ridge was trained on all 35{,}379 rows) reflects this trade-off between speed and dataset coverage rather than any fundamental weakness of the neural network architecture.
+
 \bibliography{refs}
 
 \end{document}

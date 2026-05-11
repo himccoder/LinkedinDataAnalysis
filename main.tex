@@ -372,6 +372,16 @@ The residual plots for Model D (Figure~\ref{fig:nn_resid}) closely resemble thos
 
 Training the MLP on this dataset surfaced a few practical difficulties. Converting the sparse TF-IDF matrix to a dense array for the neural network required roughly 500 MB of memory, which slowed down processing on a standard laptop CPU. Training each epoch on the full dataset took approximately two minutes, making cross-validation impractical without access to a GPU or a computing cluster. We addressed this by subsampling to 10{,}000 rows, which reduced training time to under ten minutes while preserving the core patterns in the data. The slight drop in absolute performance compared to Section~10 (where Ridge was trained on all 35{,}379 rows) reflects this trade-off between speed and dataset coverage rather than any fundamental weakness of the neural network architecture.
 
+
+\section*{12. Future Work}
+
+Several directions could improve upon our results. First, applying a logarithmic transformation to \texttt{med\_salary} would address the heteroskedasticity observed in both models, likely reducing error for high-salary roles. Second, replacing TF-IDF with contextual embeddings from a pre-trained model such as BERT could capture phrase-level semantics that bag-of-words representations miss. Third, training the MLP on the full 35{,}379-posting dataset with GPU acceleration would provide a fairer comparison against the Ridge baseline. Finally, imputing missing experience levels from job description text and consolidating rare industry categories into broader groups could strengthen the structured features.
+
+\section*{13. Conclusion}
+
+This project demonstrated that job description text is the dominant predictor of salary in LinkedIn job postings. Across both Ridge Regression and MLP models, adding TF-IDF features reduced RMSE by roughly \$10{,}000 and raised $R^2$ from approximately 0.29 to 0.56 --- a larger gain than switching algorithms entirely. Statistical tests confirmed that skill category significantly influences compensation ($F = 4.33$, $p = 0.0017$). The primary limitation is heteroscedasticity: both models under-predict high salaries, pointing toward log-transformed targets and richer text representations as the most promising directions for future work. Overall, our results confirm that the market value of professional skills is recoverable from publicly available job posting data.
+
+
 \bibliography{refs}
 
 \end{document}
